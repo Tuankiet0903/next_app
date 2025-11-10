@@ -55,21 +55,13 @@ export default function Register() {
   };
 
   return (
-    <div
-      className={`min-h-screen flex flex-col ${
-        theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-      }`}
-    >
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
       <div className="p-4">
         <HomeIcon />
       </div>
 
       <div className="flex-1 flex items-center justify-center">
-        <div
-          className={`max-w-md w-full mx-4 ${
-            theme === "dark" ? "bg-gray-800" : "bg-white"
-          } rounded-lg shadow-md p-8`}
-        >
+        <div className="max-w-md w-full mx-4 bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Create an Account</h2>
             <ThemeToggle />

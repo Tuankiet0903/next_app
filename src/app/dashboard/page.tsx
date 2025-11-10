@@ -5,10 +5,11 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { redirect } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 import HomeIcon from "@/components/HomeIcon";
+import UsersTable from "@/components/UsersTable";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   if (status === "loading") {
     return (
@@ -23,11 +24,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div
-      className={`min-h-screen ${
-        theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
-      }`}
-    >
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
       <nav className="bg-indigo-600 text-white p-4">
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -51,12 +48,8 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <main className="container mx-auto p-8">
-        <div
-          className={`p-6 rounded-lg shadow-lg ${
-            theme === "dark" ? "bg-gray-800" : "bg-white"
-          }`}
-        >
+      <main className="container mx-auto p-8 space-y-8">
+        <div className="p-6 rounded-lg shadow-lg bg-white dark:bg-gray-800">
           <h2 className="text-xl font-semibold mb-4">Your Profile</h2>
           <div className="space-y-2">
             <p>
@@ -67,6 +60,11 @@ export default function Dashboard() {
               {session?.user?.name || "Not provided"}
             </p>
           </div>
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-4">All Users</h2>
+          <UsersTable />
         </div>
       </main>
     </div>

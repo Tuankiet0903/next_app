@@ -52,13 +52,7 @@ function LoginContent() {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col transition-colors duration-200"
-      style={{
-        backgroundColor: theme === "dark" ? "#111827" : "#F9FAFB",
-        color: theme === "dark" ? "#ffffff" : "#111827",
-      }}
-    >
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200">
       {/* Top bar with home icon */}
       <div className="p-4">
         <HomeIcon />
@@ -66,12 +60,7 @@ function LoginContent() {
 
       {/* Main content */}
       <div className="flex-1 flex items-center justify-center">
-        <div
-          className="w-full max-w-md space-y-8 rounded-lg p-8 shadow-lg transition-colors duration-200"
-          style={{
-            backgroundColor: theme === "dark" ? "#1F2937" : "#ffffff",
-          }}
-        >
+        <div className="w-full max-w-md space-y-8 rounded-lg p-8 shadow-lg bg-white dark:bg-gray-800 transition-colors duration-200">
           <div className="flex justify-between items-center mb-6">
             <div className="flex-1">
               <h2 className="text-center text-3xl font-bold">
