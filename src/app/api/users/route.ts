@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { validatePaginationParams } from "@/lib/validation";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,9 +12,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Query params
-    const page = parseInt(req.nextUrl.searchParams.get("page") || "1", 10);
-    const limit = parseInt(req.nextUrl.searchParams.get("limit") || "10", 10);
+    // Query params with validation
+    const { page, limit } = validatePaginationParams(
+      req.nextUrl.searchParams.get("page"),
+      req.nextUrl.searchParams.get("limit")
+    );
     const search = req.nextUrl.searchParams.get("search") || "";
 
     // Fetch users with pagination + search

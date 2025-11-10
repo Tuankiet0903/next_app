@@ -1,58 +1,67 @@
 "use client";
 
-import { FormEvent, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useTheme } from "@/contexts/ThemeContext";
+import { toast } from "react-toastify";
+import { motion } from "framer-motion";
 import ThemeToggle from "@/components/ThemeToggle";
 import HomeIcon from "@/components/HomeIcon";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import FormInput from "@/components/FormInput";
+import { loginSchema, type LoginFormData } from "@/lib/schemas";
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { theme } = useTheme();
-
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const registered = searchParams.get("registered");
 
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    setError("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
-    const formData = new FormData(event.currentTarget);
-
+  const onSubmit = async (data: LoginFormData) => {
     try {
       const response = await signIn("credentials", {
-        email: formData.get("email"),
-        password: formData.get("password"),
+        email: data.email.trim(),
+        password: data.password,
         redirect: false,
       });
 
       if (response?.error) {
-        setError("Invalid credentials");
+        setError("root", { message: "Invalid credentials" });
+        toast.error("Invalid credentials");
         return;
       }
 
+      toast.success("Login successful!");
       router.refresh();
       router.push("/dashboard");
     } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("An error occurred during sign in");
-      }
-    } finally {
-      setLoading(false);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An error occurred during sign in";
+      setError("root", { message });
+      toast.error(message);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200"
+    >
       {/* Top bar with home icon */}
       <div className="p-4">
         <HomeIcon />
@@ -60,96 +69,91 @@ function LoginContent() {
 
       {/* Main content */}
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-md space-y-8 rounded-lg p-8 shadow-lg bg-white dark:bg-gray-800 transition-colors duration-200">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+          className="w-full max-w-md space-y-8 rounded-lg p-8 shadow-lg bg-white dark:bg-gray-800 transition-colors duration-200"
+        >
           <div className="flex justify-between items-center mb-6">
             <div className="flex-1">
-              <h2 className="text-center text-3xl font-bold">
+              <motion.h2
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-center text-3xl font-bold"
+              >
                 Sign in to your account
-              </h2>
+              </motion.h2>
               {registered && (
-                <p className="text-center text-green-600 dark:text-green-400 mt-2">
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="text-center text-green-600 dark:text-green-400 mt-2"
+                >
                   Registration successful! Please sign in.
-                </p>
+                </motion.p>
               )}
             </div>
             <ThemeToggle />
           </div>
 
-          <form className="mt-8 space-y-6" onSubmit={onSubmit}>
-            {error && (
-              <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4 text-red-600 dark:text-red-200">
-                {error}
-              </div>
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            {errors.root && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="rounded-md bg-red-50 dark:bg-red-900/50 p-4 text-red-600 dark:text-red-200"
+              >
+                {errors.root.message}
+              </motion.div>
             )}
 
             <div className="space-y-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="input-field bg-transparent dark:bg-gray-700 dark:border-gray-600"
-                  placeholder="Enter your email"
-                />
-              </div>
+              <FormInput
+                id="email"
+                label="Email address"
+                type="email"
+                autoComplete="email"
+                placeholder="Enter your email"
+                error={errors.email}
+                {...register("email")}
+              />
 
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium mb-1"
-                >
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    required
-                    className="input-field pr-10 bg-transparent dark:bg-gray-700 dark:border-gray-600"
-                    placeholder="Enter your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                  >
-                    {showPassword ? (
-                      <EyeSlashIcon className="h-5 w-5" />
-                    ) : (
-                      <EyeIcon className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
+              <FormInput
+                id="password"
+                label="Password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                error={errors.password}
+                showPasswordToggle
+                showPassword={showPassword}
+                onPasswordToggle={() => setShowPassword(!showPassword)}
+                {...register("password")}
+              />
             </div>
 
-            <div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={isSubmitting}
                 className={`btn-primary w-full ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
+                  isSubmitting ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
-                {loading ? "Signing in..." : "Sign in"}
+                {isSubmitting ? "Signing in..." : "Sign in"}
               </button>
-            </div>
+            </motion.div>
           </form>
 
-          <p className="mt-4 text-center text-sm">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="mt-4 text-center text-sm"
+          >
             Don&apos;t have an account?{" "}
             <button
               onClick={() => router.push("/register")}
@@ -157,10 +161,10 @@ function LoginContent() {
             >
               Register here
             </button>
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

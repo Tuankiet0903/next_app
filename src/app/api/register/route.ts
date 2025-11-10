@@ -7,31 +7,63 @@ export async function POST(req: Request) {
     const { email, password, name } = await req.json();
 
     // Input validation
-    if (!email || !password) {
+    if (!email || !password || !name) {
       return NextResponse.json(
-        { error: "Email and password are required" },
+        { error: "Email, password, and name are required" },
         { status: 400 }
       );
     }
 
-    if (typeof email !== "string" || typeof password !== "string") {
+    if (
+      typeof email !== "string" ||
+      typeof password !== "string" ||
+      typeof name !== "string"
+    ) {
       return NextResponse.json(
         { error: "Invalid input types" },
         { status: 400 }
       );
     }
 
-    if (password.length < 6) {
+    const trimmedEmail = email.trim();
+    const trimmedName = name.trim();
+
+    if (!trimmedEmail || !trimmedName) {
       return NextResponse.json(
-        { error: "Password must be at least 6 characters long" },
+        { error: "Email and name cannot be empty or whitespace" },
         { status: 400 }
       );
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(trimmedEmail)) {
       return NextResponse.json(
         { error: "Invalid email format" },
+        { status: 400 }
+      );
+    }
+
+    if (trimmedName.length < 2) {
+      return NextResponse.json(
+        { error: "Name must be at least 2 characters long" },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json(
+        { error: "Password must be at least 8 characters long" },
+        { status: 400 }
+      );
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+    if (!passwordRegex.test(password)) {
+      return NextResponse.json(
+        {
+          error:
+            "Password must contain at least one lowercase letter, one uppercase letter, and one number",
+        },
         { status: 400 }
       );
     }

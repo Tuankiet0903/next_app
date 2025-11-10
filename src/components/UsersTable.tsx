@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import axios, { AxiosError } from "axios";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
 
 interface User {
@@ -13,42 +13,25 @@ interface User {
 }
 
 export default function UsersTable() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
 
-  const fetchUsers = async () => {
-    setLoading(true);
-    setError(null);
-    try {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["users", page, limit, search],
+    queryFn: async () => {
       const { data } = await axiosInstance.get<{
         data: User[];
         total: number;
       }>("/api/users", {
         params: { page, limit, search },
       });
-      setUsers(data.data);
-      setTotal(data.total);
-    } catch (err) {
-      const axiosError = err as AxiosError<{ error: string }>;
-      if (axios.isAxiosError(axiosError)) {
-        setError(axiosError.response?.data?.error || axiosError.message);
-      } else {
-        setError("An unknown error occurred");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data;
+    },
+  });
 
-  useEffect(() => {
-    fetchUsers();
-  }, [page, search]);
-
+  const users = data?.data || [];
+  const total = data?.total || 0;
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -71,12 +54,14 @@ export default function UsersTable() {
       </div>
 
       {/* Loading / Error */}
-      {loading && <div className="text-center py-4">Loading users...</div>}
+      {isLoading && <div className="text-center py-4">Loading users...</div>}
       {error && (
-        <div className="text-red-500 text-center py-4">Error: {error}</div>
+        <div className="text-red-500 text-center py-4">
+          Error: {error instanceof Error ? error.message : "An error occurred"}
+        </div>
       )}
 
-      {!loading && !error && (
+      {!isLoading && !error && (
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
