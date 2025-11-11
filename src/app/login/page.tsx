@@ -30,6 +30,9 @@ function LoginContent() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
+      // Get callbackUrl from URL parameters
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+
       const response = await signIn("credentials", {
         email: data.email.trim(),
         password: data.password,
@@ -44,7 +47,9 @@ function LoginContent() {
 
       toast.success("Login successful!");
       router.refresh();
-      router.push("/dashboard");
+
+      // Redirect to callbackUrl or dashboard as fallback
+      router.push(callbackUrl);
     } catch (error) {
       const message =
         error instanceof Error

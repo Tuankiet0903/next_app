@@ -2,19 +2,28 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { theme } = useTheme();
+  const searchParams = useSearchParams();
+  useTheme();
 
   useEffect(() => {
     if (session) {
-      router.push("/dashboard");
+      // Check if there's a callbackUrl in the URL parameters
+      const callbackUrl = searchParams.get("callbackUrl");
+      if (callbackUrl) {
+        // Redirect to the callback URL
+        router.push(callbackUrl);
+      } else {
+        // Default redirect to dashboard
+        router.push("/dashboard");
+      }
     }
-  }, [session, router]);
+  }, [session, router, searchParams]);
 
   if (status === "loading") {
     return (

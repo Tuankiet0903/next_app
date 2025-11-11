@@ -2,14 +2,13 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "@/contexts/ThemeContext";
-import { redirect } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 import HomeIcon from "@/components/HomeIcon";
 import UsersTable from "@/components/UsersTable";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
-  const { theme } = useTheme();
+  useTheme();
 
   if (status === "loading") {
     return (
@@ -19,9 +18,7 @@ export default function Dashboard() {
     );
   }
 
-  if (status === "unauthenticated") {
-    redirect("/login");
-  }
+  // Middleware handles authentication, so we don't need client-side check here
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
