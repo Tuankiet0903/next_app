@@ -12,6 +12,13 @@ pipeline {
             }
         }
 
+        stage('Check Docker Compose') {
+            steps {
+                sh 'docker-compose version'
+                // hoặc docker compose version nếu dùng v2
+                sh 'docker compose version'
+            }
+        }
         stage('Deploy with Docker Compose') {
             steps {
                 script {
