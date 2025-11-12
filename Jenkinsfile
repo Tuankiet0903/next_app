@@ -4,7 +4,6 @@ pipeline {
     environment {
         IMAGE_NAME = "nextjs-app"
         CONTAINER_NAME = "nextjs-container"
-        // Lấy DATABASE_URL từ Jenkins Credentials (Secret Text)
         DATABASE_URL = credentials('DATABASE_URL')
     }
 
@@ -28,14 +27,15 @@ pipeline {
             }
         }
 
-        stage('Stop Old Container') {
+        stage('Stop & Remove Old Container') {
             steps {
                 script {
-                    echo "Stopping old container if exists..."
+                    echo "Stopping and removing old container if exists..."
                     sh """
-                        if [ \$(docker ps -q -f name=${CONTAINER_NAME}) ]; then
-                            docker stop ${CONTAINER_NAME}
-                            docker rm ${CONTAINER_NAME}
+                        OLD_CONTAINER=\$(docker ps -a -q -f name=${CONTAINER_NAME})
+                        if [ ! -z "\$OLD_CONTAINER" ]; then
+                            docker stop ${CONTAINER_NAME} || true
+                            docker rm ${CONTAINER_NAME} || true
                         fi
                     """
                 }
@@ -70,6 +70,17 @@ pipeline {
                 }
             }
         }
+
+        stage('Show Container Logs') {
+            steps {
+                script {
+                    echo "📄 Attaching container logs..."
+                    sh """
+                        docker logs -f ${CONTAINER_NAME}
+                    """
+                }
+            }
+        }
     }
 
     post {
@@ -77,7 +88,7 @@ pipeline {
             echo "✅ Deployment completed successfully!"
         }
         failure {
-            echo "❌ Build failed!"
+            echo "❌ Deployment failed!"
         }
     }
 }
