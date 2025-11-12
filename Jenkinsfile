@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = "nextjs-app"
         CONTAINER_NAME = "nextjs-container"
         // Lấy DATABASE_URL từ Jenkins Credentials (Secret Text)
-        DATABASE_URL = credentials('DATABASE_URL') 
+        DATABASE_URL = credentials('DATABASE_URL')
     }
 
     stages {
@@ -43,33 +43,33 @@ pipeline {
         }
 
         stage('Run New Container') {
-    steps {
-        script {
-            echo "Starting new container..."
-            if [ -z "${DATABASE_URL}" ]; then
-                echo "⚠️ DATABASE_URL not set. Container will start but Prisma migrations will be skipped."
-                sh """
-                    docker run -d \
-                    --name ${CONTAINER_NAME} \
-                    -p 3000:3000 \
-                    --restart unless-stopped \
-                    ${IMAGE_NAME}:latest
-                """
-            else
-                echo "✅ DATABASE_URL set. Container will run Prisma migrations on start."
-                sh """
-                    docker run -d \
-                    --name ${CONTAINER_NAME} \
-                    -p 3000:3000 \
-                    -e DATABASE_URL=${DATABASE_URL} \
-                    --restart unless-stopped \
-                    ${IMAGE_NAME}:latest \
-                    sh -c "npx prisma migrate deploy && npm start"
-                """
-            fi
+            steps {
+                script {
+                    echo "Starting new container..."
+                    if (env.DATABASE_URL) {
+                        echo "✅ DATABASE_URL set. Running container with Prisma migrations."
+                        sh """
+                            docker run -d \
+                            --name ${CONTAINER_NAME} \
+                            -p 3000:3000 \
+                            -e DATABASE_URL=${DATABASE_URL} \
+                            --restart unless-stopped \
+                            ${IMAGE_NAME}:latest \
+                            sh -c "npx prisma migrate deploy && npm start"
+                        """
+                    } else {
+                        echo "⚠️ DATABASE_URL not set. Running container without Prisma migrations."
+                        sh """
+                            docker run -d \
+                            --name ${CONTAINER_NAME} \
+                            -p 3000:3000 \
+                            --restart unless-stopped \
+                            ${IMAGE_NAME}:latest
+                        """
+                    }
+                }
+            }
         }
-    }
-}
     }
 
     post {
