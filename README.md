@@ -44,7 +44,7 @@ A modern web application built with Next.js 14, featuring user authentication, d
 
 ### Prerequisites
 
-- Node.js 18 or later
+- Bun (latest version)
 - Docker (optional, for containerized database)
 - PostgreSQL (if not using Docker)
 
@@ -60,7 +60,7 @@ A modern web application built with Next.js 14, featuring user authentication, d
 2. Install dependencies:
 
    ```bash
-   npm install
+   bun install
    ```
 
 3. Set up environment variables:
@@ -79,14 +79,14 @@ A modern web application built with Next.js 14, featuring user authentication, d
    docker-compose up -d
 
    # Initialize Prisma
-   npx prisma generate
-   npx prisma db push
+   bunx prisma generate
+   bunx prisma db push
    ```
 
 5. Start the development server:
 
    ```bash
-   npm run dev
+   bun run dev
    ```
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -147,23 +147,23 @@ docker-compose down
 
 ### Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run test` - Run tests (when implemented)
+- `bun run dev` - Start development server
+- `bun run build` - Build for production
+- `bun start` - Start production server
+- `bun run lint` - Run ESLint
+- `bun run test` - Run tests (when implemented)
 
 ### Database Management
 
 ```bash
 # Generate Prisma client
-npx prisma generate
+bunx prisma generate
 
 # Push schema changes
-npx prisma db push
+bunx prisma db push
 
 # Open Prisma Studio
-npx prisma studio
+bunx prisma studio
 ```
 
 ## Contributing
