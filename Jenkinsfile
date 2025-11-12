@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        // Lấy biến bí mật từ Jenkins Credentials
         NEXTAUTH_SECRET = credentials('NEXTAUTH_SECRET')
     }
 
@@ -14,11 +15,11 @@ pipeline {
 
         stage('Check Docker Compose') {
             steps {
+                echo "Checking Docker Compose version..."
                 sh 'docker-compose version'
-                // hoặc docker compose version nếu dùng v2
-                sh 'docker compose version'
             }
         }
+
         stage('Deploy with Docker Compose') {
             steps {
                 script {
@@ -26,10 +27,12 @@ pipeline {
                     sh "docker-compose down || true"
 
                     echo "Building and starting containers..."
-                    sh "NEXTAUTH_SECRET=${NEXTAUTH_SECRET} docker-compose up -d --build"
+                    // Truyền biến bí mật an toàn qua withEnv
+                    withEnv(["NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"]) {
+                        sh "docker-compose up -d --build"
+                    }
 
                     echo "Waiting for containers to be healthy..."
-                    // Docker healthcheck tự handle, optional sleep
                     sh "sleep 10"
 
                     echo "Attaching container logs..."
