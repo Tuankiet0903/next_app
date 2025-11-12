@@ -3,7 +3,7 @@
 import { useState, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
@@ -30,9 +30,6 @@ function LoginContent() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      // Get callbackUrl from URL parameters
-      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
-
       const response = await signIn("credentials", {
         email: data.email.trim(),
         password: data.password,
@@ -45,11 +42,25 @@ function LoginContent() {
         return;
       }
 
+      // Get the updated session to check role
+      const session = await getSession();
+
       toast.success("Login successful!");
       router.refresh();
 
-      // Redirect to callbackUrl or dashboard as fallback
-      router.push(callbackUrl);
+      // Check if there's a callbackUrl in the URL parameters
+      const callbackUrl = searchParams.get("callbackUrl");
+      if (callbackUrl) {
+        // Redirect to the callback URL
+        router.push(callbackUrl);
+      } else {
+        // Redirect based on role
+        if (session?.user?.role === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/home");
+        }
+      }
     } catch (error) {
       const message =
         error instanceof Error

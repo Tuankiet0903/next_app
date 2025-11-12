@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+/**
+ * POST /api/register
+ * Register a new user account
+ * Body: { email: string, password: string, name: string }
+ */
 export async function POST(req: Request) {
   try {
     const { email, password, name } = await req.json();
@@ -85,12 +90,25 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await hash(password, 12);
 
+    // Get the user role
+    const userRole = await prisma.role.findUnique({
+      where: { name: "user" },
+    });
+
+    if (!userRole) {
+      return NextResponse.json(
+        { error: "User role not found. Please run database initialization." },
+        { status: 500 }
+      );
+    }
+
     // Create user
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
         password: hashedPassword,
         name: name?.trim() || null,
+        roleId: userRole.id,
       },
     });
 

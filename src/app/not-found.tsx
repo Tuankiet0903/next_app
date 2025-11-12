@@ -57,13 +57,13 @@ export default function NotFound() {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/" className="btn-primary px-6 py-3 text-center">
-                Go Home
+                Go to LandingPage
               </Link>
               <Link
-                href="/dashboard"
+                href="/home"
                 className="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center"
               >
-                Go to Dashboard
+                Go to Home
               </Link>
             </div>
 

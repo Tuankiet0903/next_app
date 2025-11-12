@@ -1,21 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface User {
   id: string;
   name: string | null;
   email: string;
+  role: {
+    name: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
+const tableHeader = [
+  "Name",
+  "Email",
+  "Role",
+  "Created At",
+  "Updated At",
+  "Actions",
+];
 
 export default function UsersTable() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [search, setSearch] = useState("");
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    user: User | null;
+  }>({
+    isOpen: false,
+    user: null,
+  });
+
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["users", page, limit, search],
@@ -30,9 +51,37 @@ export default function UsersTable() {
     },
   });
 
+  const { data: rolesData } = useQuery({
+    queryKey: ["roles"],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get<{
+        data: { id: string; name: string }[];
+      }>("/api/roles");
+      return data.data;
+    },
+  });
+
+  const updateRoleMutation = useMutation({
+    mutationFn: ({ id, roleName }: { id: string; roleName: string }) =>
+      axiosInstance.put(`/api/users/${id}`, { roleName }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (id: string) => axiosInstance.delete(`/api/users/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+
   const users = data?.data || [];
+  const roles = rolesData || [];
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / limit);
+
+  console.log(users);
 
   return (
     <div className="overflow-x-auto rounded-lg shadow bg-white dark:bg-gray-800 p-4">
@@ -57,7 +106,7 @@ export default function UsersTable() {
       {isLoading && <div className="text-center py-4">Loading users...</div>}
       {error && (
         <div className="text-red-500 text-center py-4">
-          Error: {error instanceof Error ? error.message : "An error occurred"}
+          Error: {error.message}
         </div>
       )}
 
@@ -65,7 +114,7 @@ export default function UsersTable() {
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              {["Name", "Email", "Created At", "Updated At"].map((heading) => (
+              {tableHeader.map((heading) => (
                 <th
                   key={heading}
                   scope="col"
@@ -79,7 +128,7 @@ export default function UsersTable() {
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {users.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-4">
+                <td colSpan={6} className="text-center py-4">
                   No users found
                 </td>
               </tr>
@@ -91,10 +140,39 @@ export default function UsersTable() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    <select
+                      value={user.role?.name || ""}
+                      onChange={(e) =>
+                        updateRoleMutation.mutate({
+                          id: user.id,
+                          roleName: e.target.value,
+                        })
+                      }
+                      className="border rounded px-2 py-1 dark:bg-gray-700 dark:text-white"
+                    >
+                      <option value="">No Role</option>
+                      {roles.map((role) => (
+                        <option key={role.id} value={role.name}>
+                          {role.name.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     {new Date(user.createdAt).toLocaleDateString("en-GB")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {new Date(user.updatedAt).toLocaleDateString("en-GB")}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button
+                      onClick={() => {
+                        setDeleteDialog({ isOpen: true, user });
+                      }}
+                      className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))
@@ -135,6 +213,27 @@ export default function UsersTable() {
           </button>
         </div>
       )}
+
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        title="Delete User"
+        message={`Are you sure you want to delete user "${
+          deleteDialog.user?.name || deleteDialog.user?.email
+        }"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+        onConfirm={() => {
+          if (deleteDialog.user) {
+            deleteUserMutation.mutate(deleteDialog.user.id);
+          }
+          setDeleteDialog({ isOpen: false, user: null });
+        }}
+        onCancel={() => {
+          setDeleteDialog({ isOpen: false, user: null });
+        }}
+      />
     </div>
   );
 }

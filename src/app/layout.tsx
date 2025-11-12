@@ -6,6 +6,7 @@ import QueryProvider from "./providers/QueryProvider";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { initializeDefaultData } from "@/lib/init";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,6 +22,16 @@ export const metadata: Metadata = {
   title: "Next.js Authentication",
   description: "Secure authentication system with Next.js and NextAuth",
 };
+
+// Initialize default data on app startup
+declare global {
+  var dataInitialized: boolean;
+}
+
+if (typeof globalThis !== "undefined" && !globalThis.dataInitialized) {
+  globalThis.dataInitialized = true;
+  initializeDefaultData();
+}
 
 export default function RootLayout({
   children,

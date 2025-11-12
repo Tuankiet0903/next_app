@@ -19,8 +19,12 @@ export default function Home() {
         // Redirect to the callback URL
         router.push(callbackUrl);
       } else {
-        // Default redirect to dashboard
-        router.push("/dashboard");
+        // Redirect based on user role
+        if (session.user.role === "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/home");
+        }
       }
     }
   }, [session, router, searchParams]);

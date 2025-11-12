@@ -5,9 +5,13 @@ import { prisma } from "@/lib/prisma";
 import { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
+  interface User {
+    role?: string;
+  }
   interface Session extends DefaultSession {
     user: {
       id: string;
+      role?: string;
     } & DefaultSession["user"];
   }
 }
@@ -29,7 +33,10 @@ export const authOptions: NextAuthOptions = {
         try {
           const user = await prisma.user.findUnique({
             where: {
-              email: credentials.email,
+              email: credentials.email.toLowerCase(),
+            },
+            include: {
+              role: true,
             },
           });
 
@@ -49,6 +56,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             email: user.email,
             name: user.name,
+            role: user.role?.name,
           };
         } catch (error) {
           console.error("Error during authentication:", error);
@@ -71,12 +79,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id as string;
+        token.role = user.role as string;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.role = token.role as string;
       }
       return session;
     },

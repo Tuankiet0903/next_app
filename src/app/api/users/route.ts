@@ -4,6 +4,11 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { validatePaginationParams } from "@/lib/validation";
 
+/**
+ * GET /api/users
+ * Get paginated list of users with optional search
+ * Query parameters: page, limit, search
+ */
 export async function GET(req: NextRequest) {
   try {
     // Auth check
@@ -34,6 +39,11 @@ export async function GET(req: NextRequest) {
           id: true,
           name: true,
           email: true,
+          role: {
+            select: {
+              name: true,
+            },
+          },
           createdAt: true,
           updatedAt: true,
         },
