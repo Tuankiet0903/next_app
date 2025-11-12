@@ -14,11 +14,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma Client
+# Generate Prisma Client (no DB push here)
 RUN npx prisma generate
-RUN npx prisma db push
 
-# Build the application
+# Build the Next.js app
 RUN npm run build
 
 # Stage 3: Runner
@@ -26,19 +25,21 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-# Copy necessary files from builder
+# Copy built app & necessary files
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
-
-# Install production dependencies
-RUN npm install --production
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+# Entrypoint script to run migrations before starting app
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-CMD ["node", "server.js"]
+CMD ["docker-entrypoint.sh"]
