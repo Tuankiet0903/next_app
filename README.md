@@ -45,7 +45,7 @@ A modern web application built with Next.js 14, featuring user authentication, d
 ### Prerequisites
 
 - Bun (latest version)
-- Docker (optional, for containerized database)
+- Docker (optional, for a containerized database)
 - PostgreSQL (if not using Docker)
 
 ### Installation

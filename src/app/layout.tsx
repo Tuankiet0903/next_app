@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { initializeDefaultData } from "@/lib/init";
+import React from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +31,9 @@ declare global {
 
 if (typeof globalThis !== "undefined" && !globalThis.dataInitialized) {
   globalThis.dataInitialized = true;
-  initializeDefaultData();
+  (async () => {
+    await initializeDefaultData();
+  })();
 }
 
 export default function RootLayout({

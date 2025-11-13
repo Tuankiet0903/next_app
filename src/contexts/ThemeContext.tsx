@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 type Theme = "light" | "dark";
 
@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Step 1: Start with null to avoid SSR/client mismatch
   const [theme, setTheme] = useState<Theme | null>(null);
 
-  // Step 2: Determine theme on client only
+  // Step 2: Determine theme on a client only
   useEffect(() => {
     const initialTheme = getInitialTheme();
     setTheme(initialTheme);

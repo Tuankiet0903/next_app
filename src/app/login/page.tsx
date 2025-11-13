@@ -42,7 +42,7 @@ function LoginContent() {
         return;
       }
 
-      // Get the updated session to check role
+      // Get the updated session to check a role
       const session = await getSession();
 
       toast.success("Login successful!");
@@ -54,7 +54,7 @@ function LoginContent() {
         // Redirect to the callback URL
         router.push(callbackUrl);
       } else {
-        // Redirect based on role
+        // Redirect based on a role
         if (session?.user?.role === "admin") {
           router.push("/admin/dashboard");
         } else {

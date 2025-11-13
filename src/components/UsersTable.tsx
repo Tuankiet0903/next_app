@@ -1,4 +1,4 @@
-"use client";
+    "use client";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -64,15 +64,15 @@ export default function UsersTable() {
   const updateRoleMutation = useMutation({
     mutationFn: ({ id, roleName }: { id: string; roleName: string }) =>
       axiosInstance.put(`/api/users/${id}`, { roleName }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 
   const deleteUserMutation = useMutation({
     mutationFn: (id: string) => axiosInstance.delete(`/api/users/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 

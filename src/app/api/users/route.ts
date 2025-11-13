@@ -6,7 +6,7 @@ import { validatePaginationParams } from "@/lib/validation";
 
 /**
  * GET /api/users
- * Get paginated list of users with optional search
+ * Get a paginated list of users with optional search
  * Query parameters: page, limit, search
  */
 export async function GET(req: NextRequest) {

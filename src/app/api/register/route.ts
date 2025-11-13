@@ -3,8 +3,7 @@ import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 /**
- * POST /api/register
- * Register a new user account
+ * POST /api/register * a new user account
  * Body: { email: string, password: string, name: string }
  */
 export async function POST(req: Request) {
